@@ -1,20 +1,20 @@
-# DOT · Quantum Playground
+# DOT · Quantum Playground v2
 
-A bilingual interactive quantum-dot laboratory for MECH 6045, built through vibe coding.
+Bilingual, browser-local quantum-dot laboratory. No AI inference service.
 
-## Explore
+## Experiments
+- Quantum-dot emission using a simplified spherical effective-mass model.
+- 2D potential studio: presets, mathematical V(x,y), painted barriers, four low eigenstates and probability maps.
+- QD electroluminescence: carrier injection balance, phenomenological losses, relative photon output and approximate emission colour. Replaces the original RGB drawing studio.
 
-- Quantum-dot emission: radius, material, approximate optical gap and spectrum.
-- Potential studio: draw or enter V(x), solve the 1D stationary Schrodinger equation, inspect the five lowest states, and sample positions.
-- Pixel studio: RGB mixing, 16 x 16 painting, subpixel inspection and PNG export.
-- Field notes: selected original research and model assumptions.
+## Solver
+Five-point finite differences on a 24x24 or 36x36 interior grid, x,y in (-8,8) nm; zero Dirichlet boundaries and constant effective mass. Block imaginary-time iteration with orthogonalization. Each state is normalized by dx^2. The maximum residual in eV and convergence status are shown. Finite grids, finite box size and incomplete convergence limit accuracy. Degenerate eigenvectors are not unique. This is a 2D single-particle teaching model, not a complete 3D exciton simulation.
 
-All calculations run in the browser. No AI API or backend is required. Experiment state is saved only in browser local storage.
+## EL model
+Dimensionless injection rates Je=D*se and Jh=D*sh. Balance gamma=2min(Je,Jh)/(Je+Jh); radiative fraction=1/(1+T+0.12D^2); EQE=gamma*radiative*0.20. All rate, loss and extraction coefficients are educational assumptions, not fitted experimental parameters. Real-device loss mechanisms vary. Source: https://www.nature.com/articles/s41467-024-52521-0
 
-## Deploy
+## Validation
+Analytic discrete 2D box energies and degeneracy, normalization, orthogonality, eigen-equation residuals, a nonseparable xy potential and constant energy shifts; EL limits and no-injection darkness. Nine unit tests including the original solver tests pass.
 
-Publish the main branch root with GitHub Pages. index.html must remain at the repository root. The .nojekyll file disables Jekyll processing.
-
-## Scientific scope
-
-The potential solver uses 256 interior grid points, central differences, constant effective mass and zero Dirichlet boundaries. The separate light lab uses a simplified spherical Brus-type model, including the bulk band gap, electron/hole confinement and Coulomb attraction. The 1D E2-E1 spacing is not used as quantum-dot visible recombination energy. RGB artwork is an illustrative display model. Detailed limitations and references appear on the website.
+## Deployment and rollback
+Publish main branch root using GitHub Pages. Original v1 commit: 1b8772b865f602a8a229c6985007ffc35943b0fc. Revert the v2 commit through GitHub to restore v1. A local ZIP of the complete original source was also saved before editing.
