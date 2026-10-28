@@ -3,6 +3,7 @@ import {HBAR2_2ME} from './physics.mjs';
 // Returns discrete-normalized states; physical psi = vector / dx.
 export function solve2D(V,{n=24,span=16,mass=.13,states=4,iterations=16000,tolerance=1e-5}={}){
  if(V.length!==n*n||V.some(v=>!Number.isFinite(v))||mass<=0||span<=0)throw Error('Invalid grid');
+ const requested=states;states+=4;
  const dx=span/(n+1),t=HBAR2_2ME/(mass*dx*dx),vmin=Math.min(...V),vmax=Math.max(...V),dt=.9/(8*t+vmax-vmin);
  const H=(v,out)=>{for(let y=0;y<n;y++)for(let x=0;x<n;x++){const i=y*n+x;out[i]=(4*t+V[i])*v[i]-t*((x?v[i-1]:0)+(x<n-1?v[i+1]:0)+(y?v[i-n]:0)+(y<n-1?v[i+n]:0));}};
  let seed=4291;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296-.5;};
@@ -14,12 +15,12 @@ export function solve2D(V,{n=24,span=16,mass=.13,states=4,iterations=16000,toler
   if(step%50===49||step===iterations-1){// Rayleigh-Ritz rotation resolves close/degenerate states within the block.
 const A=Array.from({length:states},()=>Array(states).fill(0)),Q=Array.from({length:states},(_,i)=>Array.from({length:states},(_,j)=>i===j?1:0));
 for(let j=0;j<states;j++){H(waves[j],work);for(let i=0;i<states;i++)for(let z=0;z<work.length;z++)A[i][j]+=waves[i][z]*work[z];}
-for(let sweep=0;sweep<60;sweep++){let a=0,b=1;for(let i=0;i<states;i++)for(let j=i+1;j<states;j++)if(Math.abs(A[i][j])>Math.abs(A[a][b])){a=i;b=j;}if(Math.abs(A[a][b])<1e-14)break;const theta=.5*Math.atan2(2*A[a][b],A[b][b]-A[a][a]),c=Math.cos(theta),s=Math.sin(theta),aa=A[a][a],bb=A[b][b],ab=A[a][b];A[a][a]=c*c*aa-2*s*c*ab+s*s*bb;A[b][b]=s*s*aa+2*s*c*ab+c*c*bb;A[a][b]=A[b][a]=0;for(let j=0;j<states;j++){if(j!==a&&j!==b){const u=A[j][a],v=A[j][b];A[j][a]=A[a][j]=c*u-s*v;A[j][b]=A[b][j]=s*u+c*v;}const u=Q[j][a],v=Q[j][b];Q[j][a]=c*u-s*v;Q[j][b]=s*u+c*v;}}
+for(let sweep=0;sweep<250;sweep++){let a=0,b=1;for(let i=0;i<states;i++)for(let j=i+1;j<states;j++)if(Math.abs(A[i][j])>Math.abs(A[a][b])){a=i;b=j;}if(Math.abs(A[a][b])<1e-14)break;const theta=.5*Math.atan2(2*A[a][b],A[b][b]-A[a][a]),c=Math.cos(theta),s=Math.sin(theta),aa=A[a][a],bb=A[b][b],ab=A[a][b];A[a][a]=c*c*aa-2*s*c*ab+s*s*bb;A[b][b]=s*s*aa+2*s*c*ab+c*c*bb;A[a][b]=A[b][a]=0;for(let j=0;j<states;j++){if(j!==a&&j!==b){const u=A[j][a],v=A[j][b];A[j][a]=A[a][j]=c*u-s*v;A[j][b]=A[b][j]=s*u+c*v;}const u=Q[j][a],v=Q[j][b];Q[j][a]=c*u-s*v;Q[j][b]=s*u+c*v;}}
 const old=waves.map(v=>v.slice()),order=Array.from({length:states},(_,k)=>k).sort((a,b)=>A[a][a]-A[b][b]);for(let k=0;k<states;k++){waves[k].fill(0);for(let j=0;j<states;j++)for(let z=0;z<work.length;z++)waves[k][z]+=old[j][z]*Q[j][order[k]];}
-energies=[];residuals=[];for(const a of waves){H(a,work);let e=0;for(let i=0;i<a.length;i++)e+=a[i]*work[i];let r=0;for(let i=0;i<a.length;i++)r+=(work[i]-e*a[i])**2;energies.push(e);residuals.push(Math.sqrt(r));}if(Math.max(...residuals)<tolerance)break;}
+energies=[];residuals=[];for(const a of waves){H(a,work);let e=0;for(let i=0;i<a.length;i++)e+=a[i]*work[i];let r=0;for(let i=0;i<a.length;i++)r+=(work[i]-e*a[i])**2;energies.push(e);residuals.push(Math.sqrt(r));}if(Math.max(...residuals.slice(0,requested))<tolerance)break;}
  }
- const order=energies.map((e,k)=>k).sort((a,b)=>energies[a]-energies[b]);
- return {energies:order.map(k=>energies[k]),waves:order.map(k=>Array.from(waves[k],v=>v/dx)),residuals:order.map(k=>residuals[k]),dx,n,span,steps,converged:Math.max(...residuals)<tolerance};
+ const order=energies.map((e,k)=>k).sort((a,b)=>energies[a]-energies[b]).slice(0,requested);
+ return {energies:order.map(k=>energies[k]),waves:order.map(k=>Array.from(waves[k],v=>v/dx)),residuals:order.map(k=>residuals[k]),dx,n,span,steps,converged:Math.max(...residuals.slice(0,requested))<tolerance};
 }
 export function ledModel({drive=1,electron=1,hole=1,traps=.2,outcoupling=.2}={}){
  // Dimensionless teaching model, not a calibrated device simulation.
