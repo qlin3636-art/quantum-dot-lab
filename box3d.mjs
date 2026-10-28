@@ -1,0 +1,8 @@
+import {HBAR2_2ME} from './physics.mjs';
+export function boxEnergy(L,q,m=.13){return HBAR2_2ME*Math.PI**2/m*q.reduce((s,n,i)=>s+n*n/L[i]**2,0);}
+// Positions u are fractional coordinates [0,1]; psi has units nm^-3/2.
+export function boxPsi(u,L,q){if(u.some(x=>x<=0||x>=1))return 0;return Math.sqrt(8/(L[0]*L[1]*L[2]))*u.reduce((s,x,i)=>s*Math.sin(Math.PI*q[i]*x),1);}
+export function cloudPoints(q,count=2400){let seed=89471;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};const points=[];while(points.length<count){const p=[rand(),rand(),rand()],weight=p.reduce((s,x,i)=>s*Math.sin(Math.PI*q[i]*x)**2,1);if(rand()<weight)points.push(p);}return points;}
+// Marching tetrahedra on a dimensionless probability density in a unit box.
+export function isoTriangles(q,level=.25,n=18){const val=p=>p.reduce((s,x,i)=>s*Math.sin(Math.PI*q[i]*x)**2,1);const corners=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]],tetra=[[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6],[0,5,1,6]],triangles=[];
+ for(let z=0;z<n;z++)for(let y=0;y<n;y++)for(let x=0;x<n;x++){const p=corners.map(c=>[(x+c[0])/n,(y+c[1])/n,(z+c[2])/n]),v=p.map(val);for(const t of tetra){const a=t.filter(i=>v[i]>=level),b=t.filter(i=>v[i]<level);if(!a.length||!b.length)continue;const cross=(i,j)=>{const f=(level-v[i])/(v[j]-v[i]);return p[i].map((c,k)=>c+f*(p[j][k]-c));};if(a.length===1||b.length===1){const one=a.length===1?a:b,other=a.length===1?b:a;triangles.push(other.map(j=>cross(one[0],j)));}else{const A=cross(a[0],b[0]),B=cross(a[0],b[1]),C=cross(a[1],b[0]),D=cross(a[1],b[1]);triangles.push([A,B,C],[B,D,C]);}}}return triangles;}

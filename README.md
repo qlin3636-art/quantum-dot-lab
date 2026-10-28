@@ -18,3 +18,6 @@ Analytic discrete 2D box energies and degeneracy, normalization, orthogonality, 
 
 ## Deployment and rollback
 Publish main branch root using GitHub Pages. Original v1 commit: 1b8772b865f602a8a229c6985007ffc35943b0fc. Revert the v2 commit through GitHub to restore v1. A local ZIP of the complete original source was also saved before editing.
+
+## v3: dimensional progression
+Default 1D numerical studio restored; 2D arbitrary-potential numerical studio retained. 3D is an explicitly labeled analytic infinite rectangular-box model with fixed effective mass 0.13me, lengths 3–14 nm, quantum numbers 1–3, static rejection-sampled clouds, marching-tetrahedra probability isosurfaces and XY/XZ/YZ slices. Slice colour scales use the global analytic density maximum, not per-slice normalization. Rotation and zoom affect the view only. No arbitrary 3D potential or brush is claimed. Numerical normalization, boundary/node, energy scaling, degeneracy, cloud symmetry and surface-bound tests pass.
